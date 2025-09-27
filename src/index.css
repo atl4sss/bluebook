@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* ====== custom fonts ====== */
+@font-face {
+  font-family: 'Myriad_Pro';
+  src: url('/assets/fonts/MyriadPro-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Minion_Pro';
+  src: url('/assets/fonts/MinionPro-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* (оставьте здесь остальные стили App.css / index.css – логотипы, анимации …) */

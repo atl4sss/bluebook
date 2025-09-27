@@ -7,7 +7,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<StartCodePage />} />
-        <Route path="/test/:testId" element={<TestPage />} />
+        {/* 👉 убираем :testId */}
+        <Route path="/test" element={<TestPage />} />
       </Routes>
     </BrowserRouter>
   );

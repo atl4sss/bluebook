@@ -1,57 +1,50 @@
-//  src/pages/StartCodePage.jsx
 import { useState, useRef } from "react";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore"; // getDoc удалён
 import { db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import { HelpCircle, Home } from "lucide-react";
 
 export default function StartCodePage() {
-  /* state */
   const [code, setCode] = useState(Array(6).fill(""));
-  const [err, setErr] = useState("");
-  const nav = useNavigate();
-  const cells = useRef([]);
+  const [err, setErr]   = useState("");
+  const nav             = useNavigate();
+  const cells           = useRef([]);
 
-  /* change handler (по-символьно) */
-  const onChange = (i, e) => {
-    const v = e.target.value.replace(/\D/g, "").slice(-1);
+  const handleChange = (idx, e) => {
+    const v = e.target.value.replace(/[^0-9]/g, "").slice(-1);
     const next = [...code];
-    next[i] = v;
+    next[idx] = v;
     setCode(next);
-    if (v && i < 5) cells.current[i + 1]?.focus();
+    if (v && idx < 5) cells.current[idx + 1]?.focus();
   };
 
-  /* submit */
   const submit = async (e) => {
     e.preventDefault();
     const joined = code.join("");
     if (joined.length !== 6) return setErr("Enter the 6-digit code");
 
     try {
-      // log attempt
+      // 1) log every entered code
       await setDoc(
         doc(db, "enteredCodes", joined),
         { createdAt: serverTimestamp() },
         { merge: true }
       );
 
-      const snap = await getDoc(doc(db, "startCodes", joined));
-      if (snap.exists()) nav(`/test/${snap.data().testId}`);
-      else setErr("Invalid code");
+      // 2) immediately launch the SAT module
+      nav("/test");         // always starts with rw1 inside TestPage
     } catch {
       setErr("Network error");
     }
   };
 
-  /* стиль квадрата */
   const square =
     "w-20 h-20 text-4xl text-center bg-white border-[1.5px] border-gray-300 " +
     "rounded-md shadow-inner focus:outline-none focus:border-black";
 
-  /* jsx */
   return (
     <div className="min-h-screen flex flex-col bg-[#aec7b5] text-gray-900 font-sans">
-      {/* ─── top bar ───────────────────────────────────────────── */}
+      {/* top bar */}
       <header className="flex justify-between items-center px-4 py-1.5 text-sm bg-white/70 backdrop-blur border-b border-gray-300">
         <button className="flex items-center gap-1 hover:underline">
           <HelpCircle size={16} /> Help
@@ -61,8 +54,8 @@ export default function StartCodePage() {
         </button>
       </header>
 
-      {/* ─── main block ───────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+      {/* main */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 text-center select-none">
         <h1 className="text-4xl font-semibold mb-8">Start Code</h1>
 
         <p>Enter your start code now to begin testing. Good luck!</p>
@@ -71,13 +64,12 @@ export default function StartCodePage() {
         </p>
 
         <form onSubmit={submit} className="flex flex-col items-center gap-10">
-          {/* six squares */}
           <div className="flex gap-4">
-            {code.map((v, i) => (
+            {code.map((d, i) => (
               <input
                 key={i}
-                value={v}
-                onChange={(e) => onChange(i, e)}
+                value={d}
+                onChange={(e) => handleChange(i, e)}
                 ref={(el) => (cells.current[i] = el)}
                 maxLength={1}
                 inputMode="numeric"

@@ -40,3 +40,5 @@
 .read-the-docs {
   color: #888;
 }
+@font-face {font-family:'Myriad_Pro';src:url('/assets/fonts/MyriadPro-Regular.otf') format('opentype');font-display:swap;}
+@font-face {font-family:'Minion_Pro';src:url('/assets/fonts/MinionPro-Regular.otf') format('opentype');font-display:swap;}
