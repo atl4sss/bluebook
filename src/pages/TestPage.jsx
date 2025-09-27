@@ -438,7 +438,7 @@ export default function TestPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white font-sans text-gray-900 text-[17px] leading-[1.6]">
       {/* ===== HEADER ===== */}
-      <header className="relative flex flex-wrap items-start justify-between px-6 md:px-10 pt-2 pb-1 bg-white/90 backdrop-blur-sm border-b border-gray-300 select-none">
+      <header className="relative flex flex-wrap items-start justify-between px-6 md:px-10 pt-2 pb-1 bg-white/90 backdrop-blur-sm  select-none">
         <h1 className="text-xl md:text-2xl font-semibold">
           Section&nbsp;{stage.sec}, Module&nbsp;{stage.mod}: {stage.title}
         </h1>
