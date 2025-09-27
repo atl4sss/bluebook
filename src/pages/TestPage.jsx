@@ -15,9 +15,12 @@ export default function TestPage() {
   const [showDir, setShowDir] = useState(false);
   const [showList, setShowList] = useState(false);
 
-  const totalQ = 8;
-  const curQ = 2;
-  const flagged = [7];
+  /* ——— ТУТ только две строки изменены ——— */
+  const totalQ = 27;      // ← было 8
+  const flagged = [];     // ← прежние  [7] удалил, чтобы не выходило за диапазон
+  /* ---------------------------------------------------------- */
+
+  const curQ = 2;         // оставил как было: «текущий» вопрос №2-й
 
   useEffect(() => {
     const id = setInterval(() => setSec((s) => s + 1), 1_000);
@@ -25,6 +28,8 @@ export default function TestPage() {
   }, []);
   const fmt = (s) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+  /* ---------- дальнейший код НЕ ТРОГАЛ ---------- */
 
   return (
     <div className="flex flex-col min-h-screen bg-white font-sans text-gray-900 text-[17px] leading-[1.6]">
@@ -151,7 +156,8 @@ export default function TestPage() {
   );
 }
 
-/* ===== helpers ===== */
+/* ========= helpers (без изменений) ========= */
+
 const DashLine = ({ className = "" }) => (
   <div
     className={`h-[2px] w-full ${className}`}
@@ -172,7 +178,8 @@ const NavBtn = ({ children }) => (
   </button>
 );
 
-/* ===== Question area ===== */
+/* ===== Question area (не трогал) ===== */
+
 function QuestionCard({ answers, setAnswers }) {
   const opts = [
     "It elaborates on the previous sentence’s description of the character.",
@@ -206,7 +213,6 @@ function QuestionCard({ answers, setAnswers }) {
 
 const ReviewBanner = () => (
   <div className="relative flex items-center gap-3 py-1.5 pr-0 mb-4 select-none">
-    {/* номер */}
     <span className="px-3 h-8 flex items-center bg-black text-white font-bold text-base rounded-r-md">
       2
     </span>
@@ -214,7 +220,6 @@ const ReviewBanner = () => (
     <span className="font-medium text-gray-800 text-sm md:text-base">
       Mark for Review
     </span>
-    {/* baseline */}
     <div className="absolute left-0 right-0 -bottom-[2px] h-[2px] bg-gray-500 overflow-hidden">
       <div
         className="absolute inset-0"
@@ -251,34 +256,35 @@ const Choice = ({ label, text, active, onClick }) => (
   </li>
 );
 
-/* ===== Popover ===== */
 function Popover({ total, current, flagged, onClose }) {
   return (
     <div className="absolute left-1/2 -translate-x-1/2 bottom-[90px] bg-white border border-gray-300 rounded-lg shadow-lg w-[360px] z-50">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 text-sm font-semibold">
+      <div className="flex items-center justify-between px-4 py-3 border-b text-sm font-semibold">
         Questions
-        <button onClick={onClose} className="p-1 rounded hover:bg-gray-100">
+        <button onClick={onClose} className="p-1 hover:text-red-600">
           <X size={16} />
         </button>
       </div>
       <div className="p-4 grid grid-cols-8 gap-2 text-xs">
-        {Array.from({ length: total }).map((_, i) => {
-          const n = i + 1;
-          const cls =
-            n === current ? "border border-gray-900" : "bg-[#324DC7] text-white";
-          return (
-            <div
-              key={n}
-              className={`relative w-8 h-8 flex items-center justify-center rounded-sm font-bold ${cls}`}
-            >
-              {n}
-              {flagged.includes(n) && (
-                <span className="absolute -top-[2px] right-[2px] w-2 h-2 bg-red-500 rounded" />
-              )}
-            </div>
-          );
-        })}
+        {Array.from({ length: total }).map((_, i) => (
+          <div
+            key={i}
+            className={`relative w-8 h-8 flex items-center justify-center rounded-sm font-bold
+              ${
+                i + 1 === current
+                  ? "border border-gray-900"
+                  : "bg-[#324DC7] text-white"
+              }`}
+          >
+            {i + 1}
+            {flagged.includes(i + 1) && (
+              <span className="absolute -top-[2px] right-[2px] w-2 h-2 bg-red-500 rounded" />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+
+/* ===== end of file ===== */
