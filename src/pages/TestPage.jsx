@@ -245,8 +245,8 @@ export default function TestPage() {
           }}
         >
           {/* STIMULUS / TEXT  */}
-          <section className="pr-8 md:pr-12">
-            <p className="text-[15px] md:text-[16px] font-serif">
+          <section className="max-w-[640px] pr-8 md:pr-12">
+            <p className="text-[15px] md:text-[16px]">
               {QUESTIONS[idx].stem}
             </p>
           </section>
