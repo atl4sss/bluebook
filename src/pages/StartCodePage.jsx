@@ -1,15 +1,23 @@
-import { useState, useRef } from "react";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"; // getDoc удалён
-import { db } from "../firebaseConfig";
-import { useNavigate } from "react-router-dom";
-import { HelpCircle, Home } from "lucide-react";
+/* StartCodePage.jsx
+   – старт-код + модальное “Help → введите имя”                            */
+
+import { useState, useRef }   from "react";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db }                 from "../firebaseConfig";
+import { useNavigate }        from "react-router-dom";
+import { HelpCircle, Home, X } from "lucide-react";
 
 export default function StartCodePage() {
-  const [code, setCode] = useState(Array(6).fill(""));
-  const [err, setErr]   = useState("");
-  const nav             = useNavigate();
-  const cells           = useRef([]);
+  /* ---------- локальное состояние ---------- */
+  const [code, setCode]   = useState(Array(6).fill(""));
+  const [err,  setErr]    = useState("");
+  const [name, setName]   = useState("");
+  const [showHelp, setShowHelp] = useState(false);
 
+  const nav    = useNavigate();
+  const cells  = useRef([]);
+
+  /* ---------- ввод 6-значного кода ---------- */
   const handleChange = (idx, e) => {
     const v = e.target.value.replace(/[^0-9]/g, "").slice(-1);
     const next = [...code];
@@ -18,43 +26,48 @@ export default function StartCodePage() {
     if (v && idx < 5) cells.current[idx + 1]?.focus();
   };
 
+  /* ---------- сохранение кода (+ имени) ---------- */
   const submit = async (e) => {
     e.preventDefault();
     const joined = code.join("");
+
     if (joined.length !== 6) return setErr("Enter the 6-digit code");
+    if (!name.trim())        return setErr("Enter your name in Help");
 
     try {
-      // 1) log every entered code
       await setDoc(
         doc(db, "enteredCodes", joined),
-        { createdAt: serverTimestamp() },
+        { name: name.trim(), createdAt: serverTimestamp() },
         { merge: true }
       );
-
-      // 2) immediately launch the SAT module
-      nav("/test");         // always starts with rw1 inside TestPage
+      nav("/test");                         // SAT-модуль
     } catch {
       setErr("Network error");
     }
   };
 
+  /* ---------- presentation ---------- */
   const square =
     "w-20 h-20 text-4xl text-center bg-white border-[1.5px] border-gray-300 " +
     "rounded-md shadow-inner focus:outline-none focus:border-black";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#aec7b5] text-gray-900 font-sans">
-      {/* top bar */}
-      <header className="flex justify-between items-center px-4 py-1.5 text-sm bg-white/70 backdrop-blur border-b border-gray-300">
-        <button className="flex items-center gap-1 hover:underline">
-          <HelpCircle size={16} /> Help
+      {/* ------------ top bar ------------ */}
+      <header className="flex justify-between items-center px-4 py-1.5 text-sm bg-white/70 backdrop-blur">
+        <button
+          onClick={() => setShowHelp(true)}
+          className="flex items-center gap-1 hover:underline"
+        >
+          <HelpCircle size={18} /> Help
         </button>
+
         <button className="flex items-center gap-1 hover:underline">
-          Return to Home <Home size={16} />
+          Return to Home <Home size={18} />
         </button>
       </header>
 
-      {/* main */}
+      {/* ------------ main ------------ */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 text-center select-none">
         <h1 className="text-4xl font-semibold mb-8">Start Code</h1>
 
@@ -71,7 +84,6 @@ export default function StartCodePage() {
                 value={d}
                 onChange={(e) => handleChange(i, e)}
                 ref={(el) => (cells.current[i] = el)}
-                maxLength={1}
                 inputMode="numeric"
                 className={square}
               />
@@ -82,13 +94,43 @@ export default function StartCodePage() {
             Start Test
           </button>
 
-          {err && <p className="text-red-600 -mt-8">{err}</p>}
+          {err && <p className="text-red-600 -mt-6">{err}</p>}
         </form>
 
         <p className="text-sm mt-20">
           You can <span className="underline cursor-pointer">review the instructions</span> that the proctor reads aloud.
         </p>
       </div>
+
+      {/* ------------ HELP MODAL ------------ */}
+      {showHelp && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white w-[340px] p-6 rounded-lg shadow-lg relative">
+            <button
+              onClick={() => setShowHelp(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+            >
+              <X size={20} />
+            </button>
+
+            <h2 className="text-xl font-semibold mb-4">Your Name</h2>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 mb-6 focus:outline-none focus:border-black"
+              placeholder="Enter full name"
+            />
+
+            <button
+              onClick={() => setShowHelp(false)}
+              className="w-full bg-[#ffd925] hover:bg-[#fbd318] border border-black rounded-full py-2 font-semibold"
+            >
+              Save &amp; Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
