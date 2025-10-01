@@ -1,23 +1,25 @@
 /* StartCodePage.jsx
-   – старт-код + модальное “Help → введите имя”                            */
+   – ввод старт-кода + модальное “Help → введите имя”
+   – имя сохраняется в localStorage под ключом "testTakerName"
+*/
 
-import { useState, useRef }   from "react";
+import { useState, useRef } from "react";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db }                 from "../firebaseConfig";
-import { useNavigate }        from "react-router-dom";
+import { db } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
 import { HelpCircle, Home, X } from "lucide-react";
 
 export default function StartCodePage() {
-  /* ---------- локальное состояние ---------- */
-  const [code, setCode]   = useState(Array(6).fill(""));
-  const [err,  setErr]    = useState("");
-  const [name, setName]   = useState("");
+  /* ────────── state ────────── */
+  const [code, setCode]     = useState(Array(6).fill(""));
+  const [err,  setErr]      = useState("");
+  const [name, setName]     = useState("");
   const [showHelp, setShowHelp] = useState(false);
 
   const nav    = useNavigate();
   const cells  = useRef([]);
 
-  /* ---------- ввод 6-значного кода ---------- */
+  /* ────────── ввод кода ────────── */
   const handleChange = (idx, e) => {
     const v = e.target.value.replace(/[^0-9]/g, "").slice(-1);
     const next = [...code];
@@ -26,13 +28,13 @@ export default function StartCodePage() {
     if (v && idx < 5) cells.current[idx + 1]?.focus();
   };
 
-  /* ---------- сохранение кода (+ имени) ---------- */
+  /* ────────── submit ────────── */
   const submit = async (e) => {
     e.preventDefault();
     const joined = code.join("");
 
     if (joined.length !== 6) return setErr("Enter the 6-digit code");
-    if (!name.trim())        return setErr("Enter your name in Help");
+    if (!name.trim())        return setErr("Enter your name via Help");
 
     try {
       await setDoc(
@@ -40,20 +42,20 @@ export default function StartCodePage() {
         { name: name.trim(), createdAt: serverTimestamp() },
         { merge: true }
       );
-      nav("/test");                         // SAT-модуль
+      nav("/test");                           // переход к TestPage
     } catch {
       setErr("Network error");
     }
   };
 
-  /* ---------- presentation ---------- */
+  /* ────────── view ────────── */
   const square =
     "w-20 h-20 text-4xl text-center bg-white border-[1.5px] border-gray-300 " +
     "rounded-md shadow-inner focus:outline-none focus:border-black";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#aec7b5] text-gray-900 font-sans">
-      {/* ------------ top bar ------------ */}
+      {/* top bar */}
       <header className="flex justify-between items-center px-4 py-1.5 text-sm bg-white/70 backdrop-blur">
         <button
           onClick={() => setShowHelp(true)}
@@ -67,13 +69,14 @@ export default function StartCodePage() {
         </button>
       </header>
 
-      {/* ------------ main ------------ */}
+      {/* main */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 text-center select-none">
         <h1 className="text-4xl font-semibold mb-8">Start Code</h1>
 
         <p>Enter your start code now to begin testing. Good luck!</p>
         <p className="mt-2 mb-10">
-          The start code contains <span className="font-semibold">numbers only.</span>
+          The start code contains{" "}
+          <span className="font-semibold">numbers only.</span>
         </p>
 
         <form onSubmit={submit} className="flex flex-col items-center gap-10">
@@ -98,14 +101,19 @@ export default function StartCodePage() {
         </form>
 
         <p className="text-sm mt-20">
-          You can <span className="underline cursor-pointer">review the instructions</span> that the proctor reads aloud.
+          You can{" "}
+          <span className="underline cursor-pointer">
+            review the instructions
+          </span>{" "}
+          that the proctor reads aloud.
         </p>
       </div>
 
-      {/* ------------ HELP MODAL ------------ */}
+      {/* Help modal */}
       {showHelp && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-[340px] p-6 rounded-lg shadow-lg relative">
+            {/* крестик — только закрывает */}
             <button
               onClick={() => setShowHelp(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-black"
@@ -122,11 +130,17 @@ export default function StartCodePage() {
               placeholder="Enter full name"
             />
 
+            {/* кнопка сохраняет в localStorage и закрывает */}
             <button
-              onClick={() => setShowHelp(false)}
+              onClick={() => {
+                if (name.trim()) {
+                  localStorage.setItem("testTakerName", name.trim());
+                }
+                setShowHelp(false);
+              }}
               className="w-full bg-[#ffd925] hover:bg-[#fbd318] border border-black rounded-full py-2 font-semibold"
             >
-              Save &amp; Close
+              Save&nbsp;&amp;&nbsp;Close
             </button>
           </div>
         </div>

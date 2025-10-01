@@ -381,6 +381,11 @@ export default function TestPage() {
   const stage = STAGES[stageIdx];
   const isMath = stage.title === "Math";
 
+  const [takerName, setTakerName] = useState("");
+  useEffect(() => {
+    setTakerName(localStorage.getItem("testTakerName") || "");
+    }, []);
+
   /* ------------- таймер ------------- */
   useEffect(() => {
     setSecLeft(stage.mins * 60);
@@ -568,6 +573,17 @@ export default function TestPage() {
       <footer className="relative border-t border-gray-300 pt-3 pb-4 md:py-4 px-6 md:px-10">
         <DashLine className="absolute inset-x-0 top-0" />
         <div className="relative flex items-center md:max-w-7xl mx-auto w-full pt-2.5">
+          {/* имя участника слева */}
+          {takerName && (
+              <span className="
+              absolute left-4
+              pl-0
+              font-semibold 
+              text-[17px] md:text-[18px]
+              ">
+                {takerName}
+              </span>
+              )}
           <div className="ml-auto flex items-center gap-3 md:gap-4">
             <NavBtn disabled={qIdx === 0} onClick={prevQ}>
               Back
@@ -603,7 +619,7 @@ export default function TestPage() {
   );
 }
 
-/* ------------------------ Break Screen ------------------------ */
+/* ---------------- Break Screen ---------------- */
 function BreakScreen({ sec, fmt, onResume }) {
   return (
     <div className="min-h-screen flex flex-col bg-[#111] text-white font-sans">
@@ -614,6 +630,7 @@ function BreakScreen({ sec, fmt, onResume }) {
       </header>
 
       <div className="flex-1 grid md:grid-cols-2 place-items-center px-6 py-10 gap-12">
+        {/* таймер + кнопка */}
         <div className="flex flex-col items-center gap-8">
           <div className="border border-gray-400 rounded-md px-10 py-6 text-center">
             <p className="uppercase text-sm tracking-wide mb-2">
@@ -629,18 +646,39 @@ function BreakScreen({ sec, fmt, onResume }) {
           </button>
         </div>
 
+        {/* НОВЫЙ текст справа */}
         <div className="max-w-md text-[15px] leading-6">
-          <h2 className="text-3xl font-bold mb-4">Take a Break</h2>
-          <ol className="space-y-3 list-decimal ml-4">
-            <li>No phones, smart-watches, textbooks, notes, or internet.</li>
-            <li>No eating or drinking in the test room.</li>
-            <li>No talking inside; outside, don’t discuss the exam.</li>
+          <h2 className="text-4xl font-extrabold mb-6">
+            Take a Break: Do Not Close Your Device
+          </h2>
+
+          <p className="mb-6">
+            After the break, a <strong>Resume Testing Now</strong> button will
+            appear and you&#8217;ll start the next section.
+          </p>
+
+          <h3 className="font-bold mb-4">
+            Follow these rules during the break:
+          </h3>
+          <ol className="space-y-4 list-decimal ml-5">
+            <li>Do not disturb students who are still testing.</li>
+            <li>Do not exit the app or close your laptop.</li>
+            <li>
+              Do not access phones, smartwatches, textbooks, notes, or the
+              internet.
+            </li>
+            <li>Do not eat or drink near any testing device.</li>
+            <li>
+              Do not speak in the testing room; outside the room, do not discuss
+              the exam with anyone.
+            </li>
           </ol>
         </div>
       </div>
     </div>
   );
 }
+
 
 /* ----------------------- helpers & UI pieces ----------------------- */
 const DashLine = ({ className = "" }) => (
