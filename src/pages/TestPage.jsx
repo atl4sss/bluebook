@@ -1,19 +1,6 @@
+// TestPage.jsx
 /* ===========================================================================
-   TestPage.jsx  ―  полный mock-SAT (обе секции, все задания)
-   ───────────────────────────────────────────────────────────────────────────
-   Section 1  (Reading & Writing)
-     • Module 1 32 мин 27 вопросов
-     • Module 2 32 мин 27 вопросов
-   Break 10 мин
-   Section 2  (Math)
-     • Module 1 35 мин 22 вопроса
-     • Module 2 35 мин 22 вопроса
-   ─ визуал тот же: пунктир, шрифты Myriad/Minion, «Hide/Show» таймера
-   ─ «Questions»-пилюля работает во всех модулях
-   ─ RW — двухколоночная верстка; Math — центр, одна колонка
-   ─ кнопка Next чинная: пока не конец → «Next», на последнем — правильная
-     подпись («Module 2», «Break», «Finish»)
-   ─ toolbar в Math заменён на реальные иконки Calculator / Reference
+   Полный mock-SAT (2 секции + break) с переходом на /finish
    ========================================================================== */
 
 import { useState, useEffect } from "react";
@@ -21,14 +8,14 @@ import {
   BatteryFull,
   Bookmark,
   MoreVertical,
-  PenBox,
   ChevronDown,
   X,
   Calculator,
   BookOpen,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-/* -------- 27 Reading-&-Writing вопросов (точно как раньше) -------- */
+/* -------- 27 Reading-&-Writing вопросов -------- */
 const RW_QUESTIONS = [
   {
     stem:
@@ -244,10 +231,8 @@ const RW_QUESTIONS = [
 
 /* ---------------------------- Math вопросы ---------------------------- */
 const MATH_QUESTIONS = [
-  /* multiple choice 1-14 */
   {
-    stem:
-      "For f(x) = (ax + b)/(x − 2), f(0) = 1, f(4) = 5. What is a + b?",
+    stem: "For f(x) = (ax + b)/(x − 2), f(0) = 1, f(4) = 5. What is a + b?",
     choices: ["−1", "0", "1", "2"],
   },
   {
@@ -256,8 +241,7 @@ const MATH_QUESTIONS = [
     choices: ["4", "5", "(9 − 3√3)/2", "(9 + 3√3)/2"],
   },
   {
-    stem:
-      "Fence 240 m with one divider (2L + 3W = 240).  L to maximize area?",
+    stem: "Fence 240 m with one divider (2L + 3W = 240).  L to maximize area?",
     choices: ["40", "50", "60", "80"],
   },
   {
@@ -266,8 +250,7 @@ const MATH_QUESTIONS = [
     choices: ["8 %", "16 %", "50 %", "90 %"],
   },
   {
-    stem:
-      "Solve (x² − 5x + 6)/(x − 2) ≥ 3.",
+    stem: "Solve (x² − 5x + 6)/(x − 2) ≥ 3.",
     choices: ["x ≥ 6", "x > 2", "2 < x ≤ 6", "x ≤ 2 or x ≥ 6"],
   },
   {
@@ -280,8 +263,7 @@ const MATH_QUESTIONS = [
     choices: ["2x − 1", "x + 1", "x − 1", "3"],
   },
   {
-    stem:
-      "Lines ℓ₁: y = 2x + t, ℓ₂: y = (t−1)x + 4 meet on x + y = 10.  t =?",
+    stem: "Lines ℓ₁: y = 2x + t, ℓ₂: y = (t−1)x + 4 meet on x + y = 10.  t =?",
     choices: ["2", "3", "5 − √7", "7"],
   },
   {
@@ -294,7 +276,7 @@ const MATH_QUESTIONS = [
     ],
   },
   {
-    stem: "Find n ≥ 0 such that C(n + 3, 2) = 45.",
+    stem: "For a nonnegative integer n, (n + 3 choose 2) = 45. What is n?",
     choices: ["5", "6", "7", "9"],
   },
   {
@@ -303,8 +285,7 @@ const MATH_QUESTIONS = [
     choices: ["93", "95", "95.33", "98"],
   },
   {
-    stem:
-      "Solve (x − 3)² ≤ 4x − 5.",
+    stem: "Solve (x − 3)² ≤ 4x − 5.",
     choices: [
       "(−∞, 5 − √11]",
       "[5 − √11, 5 + √11]",
@@ -314,52 +295,49 @@ const MATH_QUESTIONS = [
   },
   {
     stem:
-      "Circle through (1,2) and (5,6); center on y = x, quadrant I.  y-coord?",
+      "A circle passes through (1,2) and (5,6). Its center lies on y = x and is in the first quadrant. What is the y-coordinate of the center?",
     choices: ["2.5", "3", "3.5", "4"],
   },
   {
-    stem: "If 3^(2x − 1) = 81, find x.",
+    stem: "If 3^(2x − 1) = 81, what is x?",
     choices: ["2", "2.5", "3", "4"],
   },
   /* grid-in 15-22 */
-  { stem: "Solve larger x: 2^(2x) − 5·2^x + 6 = 0.", grid: true },
+  { stem: "Solve for the larger solution x: 2^(2x) − 5·2^x + 6 = 0.", grid: true },
   {
-    stem:
-      "System: x + y = 5 and √x + √y = 3, x,y ≥ 0.  Larger x =?",
+    stem: "Solve x + y = 5 and √x + √y = 3, x,y ≥ 0. Enter the larger x.",
     grid: true,
   },
   {
     stem:
-      "Solve (x + 1)/(x − 2) + (x − 4)/(x + 1) = 2  (x ≠ −1,2).",
+      "Solve (x + 1)/(x − 2) + (x − 4)/(x + 1) = 2 for real x ≠ −1, 2. Enter x.",
     grid: true,
   },
   {
-    stem: "x² + y² = 85, x − y = 1.  Positive x = ?",
+    stem: "Given x² + y² = 85 and x − y = 1, find the positive x.",
     grid: true,
   },
   {
-    stem:
-      "a₁ = 2,  a_{n+1} = 3a_n + 4.  Find a₄.",
-    grid: true,
-  },
-  {
-    stem:
-      "10 L of 30 % acid. Add 80 % acid to get 50 %.  L added =?",
+    stem: "a₁ = 2,  a_{n+1} = 3a_n + 4.  Find a₄.",
     grid: true,
   },
   {
     stem:
-      "Minimize x + 9/x (x > 0).",
+      "A 10-liter solution is 30% acid. How many liters of 80% acid must be added to obtain 50% acid?",
+    grid: true,
+  },
+  {
+    stem: "For x > 0, find the minimum value of x + 9/x.",
     grid: true,
   },
   {
     stem:
-      "Price ↑ p % then ↓ p % → overall −4 %.  p = ?",
+      "Price ↑ p% and then ↓ p% → overall 4% decrease. Find p (positive).",
     grid: true,
   },
 ];
 
-/* --------------------------- экзаменационные стадии --------------------------- */
+/* ---------------- stages ---------------- */
 const STAGES = [
   { sec: 1, mod: 1, title: "Reading and Writing", mins: 32, qs: RW_QUESTIONS },
   { sec: 1, mod: 2, title: "Reading and Writing", mins: 32, qs: RW_QUESTIONS },
@@ -368,30 +346,29 @@ const STAGES = [
   { sec: 2, mod: 2, title: "Math", mins: 35, qs: MATH_QUESTIONS },
 ];
 
-/* ========================================================================= */
 export default function TestPage() {
-  /* ------------- state (всегда один порядок хуков) ------------- */
   const [stageIdx, setStageIdx] = useState(0);
   const [qIdx, setQIdx] = useState(0);
   const [answers, setAnswers] = useState({});
   const [secLeft, setSecLeft] = useState(STAGES[0].mins * 60);
   const [showClock, setShowClock] = useState(true);
   const [showList, setShowList] = useState(false);
+  const [takerName, setTakerName] = useState("");
+
+  const nav = useNavigate();
 
   const stage = STAGES[stageIdx];
   const isMath = stage.title === "Math";
 
-  const [takerName, setTakerName] = useState("");
   useEffect(() => {
     setTakerName(localStorage.getItem("testTakerName") || "");
-    }, []);
+  }, []);
 
-  /* ------------- таймер ------------- */
   useEffect(() => {
     setSecLeft(stage.mins * 60);
     setQIdx(0);
     window.scrollTo(0, 0);
-  }, [stageIdx]);
+  }, [stageIdx, stage.mins]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -411,25 +388,27 @@ export default function TestPage() {
       .toString()
       .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
-  /* ------------- BREAK ------------- */
+  function nextStage() {
+    if (stageIdx < STAGES.length - 1) {
+      setStageIdx(stageIdx + 1);
+    } else {
+      // последний этап – уходим на финальную страницу
+      nav("/finish");
+    }
+  }
+
   if (stage.id === "break")
     return <BreakScreen sec={secLeft} fmt={fmt} onResume={() => nextStage()} />;
 
-  /* ------------- текущий вопрос ------------- */
   const total = stage.qs.length;
   const curr = stage.qs[qIdx] || {};
   const { stem, choices, grid } = curr;
 
-  /* ------------- навигация ------------- */
   const nextQ = () => {
     if (qIdx < total - 1) setQIdx(qIdx + 1);
     else nextStage();
   };
   const prevQ = () => setQIdx((p) => Math.max(0, p - 1));
-
-  function nextStage() {
-    if (stageIdx < STAGES.length - 1) setStageIdx(stageIdx + 1);
-  }
 
   const nextLabel = (() => {
     if (qIdx < total - 1) return "Next";
@@ -439,14 +418,19 @@ export default function TestPage() {
     return "Finish";
   })();
 
-  /* ======================== RENDER ======================== */
   return (
     <div className="flex flex-col min-h-screen bg-white font-sans text-gray-900 text-[17px] leading-[1.6]">
-      {/* ===== HEADER ===== */}
-      <header className="relative flex flex-wrap items-start justify-between px-6 md:px-10 pt-2 pb-1 bg-white/90 backdrop-blur-sm  select-none">
-        <h1 className="text-xl md:text-2xl font-semibold">
-          Section&nbsp;{stage.sec}, Module&nbsp;{stage.mod}: {stage.title}
-        </h1>
+      {/* HEADER */}
+      <header className="relative flex flex-wrap items-start justify-between px-6 md:px-10 pt-2 pb-1 bg-white/90 backdrop-blur-sm select-none">
+        <div>
+          <h1 className="text-xl md:text-2xl font-semibold">
+            Section {stage.sec}, Module {stage.mod}: {stage.title}
+          </h1>
+          {/* Directions под заголовком */}
+          <button className="text-xs mt-1 flex items-center gap-1 text-gray-700">
+            Directions <ChevronDown size={13} />
+          </button>
+        </div>
 
         {/* clock */}
         <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5">
@@ -498,14 +482,13 @@ export default function TestPage() {
 
       <DashLine className="mt-5" />
 
-      {/* ===== MAIN ===== */}
+      {/* MAIN */}
       <main className="relative flex-1 overflow-auto px-6 md:px-10 py-6 md:py-8">
         {!isMath && (
           <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] bg-gray-400/90" />
         )}
 
         {isMath ? (
-          /* -------- Math: single column -------- */
           <div className="max-w-2xl mx-auto">
             <ReviewBanner num={qIdx + 1} />
             <p className="text-[16px] mb-6">{stem}</p>
@@ -531,13 +514,15 @@ export default function TestPage() {
                 className="w-full border border-gray-400 rounded-lg px-4 py-2"
                 value={answers[`${stageIdx}-${qIdx}`] ?? ""}
                 onChange={(e) =>
-                  setAnswers({ ...answers, [`${stageIdx}-${qIdx}`]: e.target.value })
+                  setAnswers({
+                    ...answers,
+                    [`${stageIdx}-${qIdx}`]: e.target.value,
+                  })
                 }
               />
             )}
           </div>
         ) : (
-          /* -------- Reading & Writing: two columns -------- */
           <div
             className="grid md:max-w-7xl mx-auto"
             style={{
@@ -569,21 +554,17 @@ export default function TestPage() {
         )}
       </main>
 
-      {/* ===== FOOTER ===== */}
+      {/* FOOTER */}
       <footer className="relative border-t border-gray-300 pt-3 pb-4 md:py-4 px-6 md:px-10">
         <DashLine className="absolute inset-x-0 top-0" />
         <div className="relative flex items-center md:max-w-7xl mx-auto w-full pt-2.5">
-          {/* имя участника слева */}
+          {/* имя слева снизу */}
           {takerName && (
-              <span className="
-              absolute left-4
-              pl-0
-              font-semibold 
-              text-[17px] md:text-[18px]
-              ">
-                {takerName}
-              </span>
-              )}
+            <span className="absolute left-4 font-semibold text-[17px] md:text-[18px]">
+              {takerName}
+            </span>
+          )}
+
           <div className="ml-auto flex items-center gap-3 md:gap-4">
             <NavBtn disabled={qIdx === 0} onClick={prevQ}>
               Back
@@ -630,36 +611,35 @@ function BreakScreen({ sec, fmt, onResume }) {
       </header>
 
       <div className="flex-1 grid md:grid-cols-2 place-items-center px-6 py-10 gap-12">
-        {/* таймер + кнопка */}
+        {/* timer */}
         <div className="flex flex-col items-center gap-8">
           <div className="border border-gray-400 rounded-md px-10 py-6 text-center">
             <p className="uppercase text-sm tracking-wide mb-2">
-              Remaining Break Time
+              REMAINING BREAK TIME
             </p>
             <p className="text-6xl font-bold tabular-nums">{fmt(sec)}</p>
           </div>
-          <button
-            onClick={onResume}
-            className="bg-[#FFD54F] text-black font-semibold px-8 py-3 rounded-full hover:bg-[#f7c52e]"
-          >
-            Resume Testing Now
-          </button>
+          {/* кнопку убрали */}
         </div>
 
-        {/* НОВЫЙ текст справа */}
+        {/* text */}
         <div className="max-w-md text-[15px] leading-6">
           <h2 className="text-4xl font-extrabold mb-6">
             Take a Break: Do Not Close Your Device
           </h2>
 
           <p className="mb-6">
-            After the break, a <strong>Resume Testing Now</strong> button will
-            appear and you&#8217;ll start the next section.
+            After the break,{" "}
+            <span
+              onClick={onResume}
+              className="font-semibold cursor-pointer"
+            >
+              Resume Testing Now
+            </span>{" "}
+            will appear and you&apos;ll start the next section.
           </p>
 
-          <h3 className="font-bold mb-4">
-            Follow these rules during the break:
-          </h3>
+          <h3 className="font-bold mb-4">Follow these rules during the break:</h3>
           <ol className="space-y-4 list-decimal ml-5">
             <li>Do not disturb students who are still testing.</li>
             <li>Do not exit the app or close your laptop.</li>
@@ -679,8 +659,7 @@ function BreakScreen({ sec, fmt, onResume }) {
   );
 }
 
-
-/* ----------------------- helpers & UI pieces ----------------------- */
+/* ----------------------- helpers ----------------------- */
 const DashLine = ({ className = "" }) => (
   <div
     className={`h-[2px] w-full ${className}`}
