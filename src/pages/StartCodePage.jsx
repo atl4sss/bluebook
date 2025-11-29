@@ -4,7 +4,7 @@
 */
 
 import { useEffect, useRef, useState } from "react";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import { HelpCircle, Home, X } from "lucide-react";
@@ -69,11 +69,11 @@ export default function StartCodePage() {
       return;
     }
     try {
-      await setDoc(
-        doc(db, "enteredCodes", joined),
-        { name: name.trim(), createdAt: serverTimestamp() },
-        { merge: true }
-      );
+      await addDoc(collection(db, "enteredCodes"), {
+        code: joined,
+        name: name.trim(),
+        createdAt: serverTimestamp(),
+      });
       nav("/test");
     } catch {
       setErr("Network error");
