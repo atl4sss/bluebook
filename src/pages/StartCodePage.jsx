@@ -1,10 +1,11 @@
 /* StartCodePage.jsx
-   – ввод старт-кода + модальное “Help → введите имя”
-   – имя сохраняется в localStorage под ключом "testTakerName"
+   – ввод 6-значного кода + модальное “Help → введите имя”
+   – имя хранится в localStorage ("testTakerName")
+   – Firestore: коллекция enteredCodes, id документа = "<Имя>__<Код>__<ts>"
 */
 
 import { useEffect, useRef, useState } from "react";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import { HelpCircle, Home, X } from "lucide-react";
@@ -18,7 +19,6 @@ export default function StartCodePage() {
   const nav = useNavigate();
   const cells = useRef([]);
 
-  // автофокус в первый инпут
   useEffect(() => {
     cells.current[0]?.focus();
   }, []);
@@ -29,58 +29,63 @@ export default function StartCodePage() {
     next[idx] = v;
     setCode(next);
     setErr("");
-
     if (v && idx < 5) cells.current[idx + 1]?.focus();
   };
 
-  // стрелки/Backspace/влево-вправо
   const handleKeyDown = (idx, e) => {
-    if (e.key === "Backspace" && !code[idx] && idx > 0) {
-      cells.current[idx - 1]?.focus();
-    }
+    if (e.key === "Backspace" && !code[idx] && idx > 0) cells.current[idx - 1]?.focus();
     if (e.key === "ArrowLeft" && idx > 0) cells.current[idx - 1]?.focus();
     if (e.key === "ArrowRight" && idx < 5) cells.current[idx + 1]?.focus();
   };
 
-  // paste всех 6 цифр
   const handlePaste = (e) => {
     const t = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (!t) return;
-    const arr = Array(6)
-      .fill("")
-      .map((_, i) => t[i] || "");
+    const arr = Array(6).fill("").map((_, i) => t[i] || "");
     setCode(arr);
-    const lastFilled = Math.min(t.length, 6) - 1;
-    if (lastFilled >= 0) cells.current[lastFilled]?.focus();
+    const last = Math.min(t.length, 6) - 1;
+    if (last >= 0) cells.current[last]?.focus();
     e.preventDefault();
   };
 
   const joined = code.join("");
   const canSubmit = joined.length === 6 && name.trim().length > 0;
 
+  // делаем "человеческий" и безопасный префикс для doc-id
+  const makeSafeName = (raw) =>
+    raw
+      .trim()
+      .replace(/\s+/g, " ")       // схлопнуть пробелы
+      .replace(/[\/#?[\]]/g, "_")  // запретные символы Firestore
+      .replace(/\s/g, "_");        // пробелы → подчёрки
+
   const submit = async (e) => {
     e.preventDefault();
     if (!canSubmit) {
-      setErr(
-        joined.length !== 6
-          ? "Enter the 6-digit code"
-          : "Open Help and enter your name"
-      );
+      setErr(joined.length !== 6 ? "Enter the 6-digit code" : "Open Help and enter your name");
       return;
     }
     try {
-      await addDoc(collection(db, "enteredCodes"), {
-        code: joined,
-        name: name.trim(),
-        createdAt: serverTimestamp(),
-      });
+      const nameSafe = makeSafeName(name);
+      const docId = `${nameSafe}__${joined}__${Date.now()}`; // видно имя, id уникальный
+
+      await setDoc(
+        doc(db, "enteredCodes", docId),
+        {
+          name: name.trim(),
+          code: joined,
+          createdAt: serverTimestamp(),
+        },
+        { merge: false }
+      );
+
       nav("/test");
-    } catch {
+    } catch (e) {
+      console.error(e);
       setErr("Network error");
     }
   };
 
-  // единый класс квадратов
   const square =
     "w-[76px] h-[82px] text-4xl text-center bg-white " +
     "border-[2px] border-gray-300 rounded-[14px] " +
@@ -91,13 +96,9 @@ export default function StartCodePage() {
     <div className="min-h-screen flex flex-col bg-[#cfdccc] text-gray-900">
       {/* top bar */}
       <header className="flex justify-between items-center px-4 py-2 text-[15px] bg-white/70 backdrop-blur">
-        <button
-          onClick={() => setShowHelp(true)}
-          className="flex items-center gap-1 hover:underline"
-        >
+        <button onClick={() => setShowHelp(true)} className="flex items-center gap-1 hover:underline">
           <HelpCircle size={18} /> Help
         </button>
-
         <button className="flex items-center gap-1 hover:underline">
           Return to Home <Home size={18} />
         </button>
@@ -105,23 +106,15 @@ export default function StartCodePage() {
 
       {/* main */}
       <main className="flex-1 flex flex-col items-center justify-start pt-20 pb-10 px-4 text-center">
-        <h1 className="text-[42px] leading-none font-semibold tracking-tight">
-          Start Code
-        </h1>
+        <h1 className="text-[42px] leading-none font-semibold tracking-tight">Start Code</h1>
 
-        <p className="mt-6 text-[18px]">
-          Enter your start code now to begin testing. Good luck!
-        </p>
+        <p className="mt-6 text-[18px]">Enter your start code now to begin testing. Good luck!</p>
         <p className="mt-1 mb-10 text-[18px]">
           The start code contains <span className="font-semibold">numbers only.</span>
         </p>
 
         <form onSubmit={submit} className="flex flex-col items-center gap-8">
-          <div
-            className="flex gap-4"
-            onPaste={handlePaste}
-            aria-label="Start code inputs"
-          >
+          <div className="flex gap-4" onPaste={handlePaste} aria-label="Start code inputs">
             {code.map((d, i) => (
               <input
                 key={i}
@@ -141,9 +134,7 @@ export default function StartCodePage() {
             disabled={!canSubmit}
             className={
               "rounded-full px-12 py-3 text-lg font-semibold border border-black shadow " +
-              (canSubmit
-                ? "bg-[#ffd925] hover:bg-[#fbd318]"
-                : "bg-[#ffe88a] cursor-not-allowed opacity-60")
+              (canSubmit ? "bg-[#ffd925] hover:bg-[#fbd318]" : "bg-[#ffe88a] cursor-not-allowed opacity-60")
             }
           >
             Start Test
@@ -158,11 +149,7 @@ export default function StartCodePage() {
         </form>
 
         <p className="text-[15px] mt-24">
-          You can{" "}
-          <span className="underline cursor-pointer">
-            review the instructions
-          </span>{" "}
-          that the proctor reads aloud.
+          You can <span className="underline cursor-pointer">review the instructions</span> that the proctor reads aloud.
         </p>
       </main>
 
