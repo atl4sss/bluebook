@@ -19,7 +19,8 @@ export default function FinishPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-[#0f172a] relative overflow-hidden">
+    <div className="min-h-screen bg-[#1A2263] flex flex-col font-sans text-white relative overflow-hidden">
+
       {/* keyframes прямо здесь, чтобы не лезть в глобальный css */}
       <style>{`
         @keyframes confetti-fall {
@@ -68,26 +69,25 @@ export default function FinishPage() {
       {/* контент */}
       <main className="flex-1 flex flex-col items-center pt-10 pb-16 px-4 relative z-50">
         {/* заголовки как на скрине — чуть крупнее */}
-        <h1 className="text-[32px] font-normal text-[#111827] tracking-tight">
+        <h1 className="text-[32px] font-normal text-white tracking-tight">
           Congratulations!
         </h1>
-        <p className="text-[17px] text-[#1f2937] mb-8 text-center">
+        <p className="text-[17px] text-[#E5E7EB] mb-8 text-center font-semibold">
           Your test is complete, and your answers have been submitted.
         </p>
 
+
         {/* белый центральный блок */}
-        <div className="bg-white w-full max-w-[520px] rounded-[22px] shadow-[0_24px_80px_rgba(15,23,42,0.08)] py-10 px-6 flex flex-col items-center">
-          {/* картинка на весь блок по ширине */}
+        <div className="bg-white w-full max-w-[560px] rounded-[22px] shadow-[0_24px_80px_rgba(15,23,42,0.08)] overflow-hidden">
           <img
             src={laptopImg}
             alt="Laptop"
-            className="w-full max-w-[340px] h-auto mb-5 select-none pointer-events-none"
+            className="w-full h-auto block select-none pointer-events-none"
           />
-          {/* текст из картинки мы НЕ дублируем — ты просил убрать */}
         </div>
 
         {/* кнопка снизу */}
-        <button className="mt-10 bg-[#ffd925] hover:bg-[#fbd318] text-[#0f172a] font-semibold text-[16px] px-10 py-3 rounded-full border border-[#0f172a]/40 shadow-[0_10px_25px_rgba(0,0,0,0.12)] transition-colors">
+        <button className="mt-6 bg-[#ffd925] hover:bg-[#fbd318] text-[#0f172a] font-semibold text-[16px] px-10 py-3 rounded-full border border-[#0f172a]/40 shadow-[0_10px_25px_rgba(0,0,0,0.12)] transition-colors">
           Return to Homepage
         </button>
       </main>

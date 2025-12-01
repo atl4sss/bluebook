@@ -1194,25 +1194,25 @@ const ReviewBanner = ({ num }) => (
 );
 const EliminateIcon = ({ label }) => (
   <svg
-    width="24"
-    height="24"
+    width="28"
+    height="28"
     viewBox="0 0 32 32"
     xmlns="http://www.w3.org/2000/svg"
   >
-    {/* чёрный круг */}
+    {/* один тёмный круг */}
     <circle
       cx="16"
       cy="16"
-      r="11"
+      r="12"
       fill="none"
       stroke="#000000"
-      strokeWidth="1.5"
+      strokeWidth="1.8"
     />
     {/* горизонтальная линия */}
     <line
-      x1="4"
+      x1="6"
       y1="16"
-      x2="28"
+      x2="26"
       y2="16"
       stroke="#000000"
       strokeWidth="1.5"
@@ -1233,7 +1233,7 @@ const EliminateIcon = ({ label }) => (
 const Choice = ({ label, text, active, onClick }) => (
   <li className="mt-4 first:mt-0">
     <div className="flex items-stretch gap-3">
-      {/* основной прямоугольный вариант */}
+      {/* основной вариант */}
       <button
         onClick={onClick}
         className={`flex-1 flex gap-4 px-6 py-3 rounded-lg border transition ${
@@ -1242,7 +1242,6 @@ const Choice = ({ label, text, active, onClick }) => (
             : "border-[#1F2937] hover:border-gray-600"
         }`}
       >
-        {/* кружок с буквой слева */}
         <span
           className={`w-6 h-6 flex items-center justify-center rounded-full border-2 text-[12px] font-semibold ${
             active ? "border-[#1F2937] text-[#1F2937]" : "border-[#1F2937]"
@@ -1251,17 +1250,15 @@ const Choice = ({ label, text, active, onClick }) => (
           {label}
         </span>
 
-        {/* текст ответа */}
         <span className="flex-1 text-left text-[16px] leading-snug">
           {text}
         </span>
       </button>
 
-      {/* маленькая иконка справа, как в bluebook */}
+      {/* круг справа без внешней обводки */}
       <button
         type="button"
-        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:border-gray-500 transition"
-        // сюда потом можно повесить onClick для "перечёркивания" варианта
+        className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition"
       >
         <EliminateIcon label={label} />
       </button>
