@@ -12,6 +12,8 @@ import {
   X,
   Calculator,
   BookOpen,
+  Target,
+  Ban,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 export { Demo };
@@ -1191,28 +1193,46 @@ const ReviewBanner = ({ num }) => (
   </div>
 );
 
-
 const Choice = ({ label, text, active, onClick }) => (
   <li className="mt-4 first:mt-0">
-    <button
-      onClick={onClick}
-      className={`w-full flex gap-4 px-6 py-3 rounded-lg border transition ${
-        active
-          ? "border-[#374151] ring-2 ring-[#374151] bg-gray-50"
-          : "border-[#374151] hover:border-gray-600"
-      }`}
-    >
-      <span
-        className={`w-6 h-6 flex items-center justify-center rounded-full border-2 text-[12px] font-semibold ${
-          active ? "border-[#374151] text-[#374151]" : "border-[#374151]"
+    <div className="flex items-stretch gap-3">
+      {/* основной прямоугольный вариант */}
+      <button
+        onClick={onClick}
+        className={`flex-1 flex gap-4 px-6 py-3 rounded-lg border transition ${
+          active
+            ? "border-[#1F2937] ring-2 ring-[#1F2937] bg-gray-50"
+            : "border-[#1F2937] hover:border-gray-600"
         }`}
       >
-        {label}
-      </span>
-      <span className="flex-1 text-left text-[16px] leading-snug">{text}</span>
-    </button>
+        {/* кружок с буквой A/B/C/D слева */}
+        <span
+          className={`w-6 h-6 flex items-center justify-center rounded-full border-2 text-[12px] font-semibold ${
+            active ? "border-[#1F2937] text-[#1F2937]" : "border-[#1F2937]"
+          }`}
+        >
+          {label}
+        </span>
+
+        {/* текст ответа */}
+        <span className="flex-1 text-left text-[16px] leading-snug">
+          {text}
+        </span>
+      </button>
+
+      {/* маленькая иконка справа, как в bluebook */}
+      <button
+        type="button"
+        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-300 hover:border-gray-500 hover:text-gray-500 transition"
+        // сюда позже можно повесить onClick для “перечёркивания” варианта
+      >
+        <Ban size={16} />
+      </button>
+    </div>
   </li>
 );
+
+
 
 function Popover({ total, current, onSelect, onClose }) {
   return (
