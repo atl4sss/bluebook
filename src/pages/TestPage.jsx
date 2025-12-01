@@ -1192,7 +1192,44 @@ const ReviewBanner = ({ num }) => (
     </div>
   </div>
 );
-
+const EliminateIcon = ({ label }) => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 32 32"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* чёрный круг */}
+    <circle
+      cx="16"
+      cy="16"
+      r="11"
+      fill="none"
+      stroke="#000000"
+      strokeWidth="1.5"
+    />
+    {/* горизонтальная линия */}
+    <line
+      x1="4"
+      y1="16"
+      x2="28"
+      y2="16"
+      stroke="#000000"
+      strokeWidth="1.5"
+    />
+    {/* буква A/B/C/D */}
+    <text
+      x="16"
+      y="20"
+      textAnchor="middle"
+      fontFamily="Inter, system-ui, sans-serif"
+      fontSize="12"
+      fill="#000000"
+    >
+      {label}
+    </text>
+  </svg>
+);
 const Choice = ({ label, text, active, onClick }) => (
   <li className="mt-4 first:mt-0">
     <div className="flex items-stretch gap-3">
@@ -1205,7 +1242,7 @@ const Choice = ({ label, text, active, onClick }) => (
             : "border-[#1F2937] hover:border-gray-600"
         }`}
       >
-        {/* кружок с буквой A/B/C/D слева */}
+        {/* кружок с буквой слева */}
         <span
           className={`w-6 h-6 flex items-center justify-center rounded-full border-2 text-[12px] font-semibold ${
             active ? "border-[#1F2937] text-[#1F2937]" : "border-[#1F2937]"
@@ -1223,14 +1260,15 @@ const Choice = ({ label, text, active, onClick }) => (
       {/* маленькая иконка справа, как в bluebook */}
       <button
         type="button"
-        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-300 hover:border-gray-500 hover:text-gray-500 transition"
-        // сюда позже можно повесить onClick для “перечёркивания” варианта
+        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:border-gray-500 transition"
+        // сюда потом можно повесить onClick для "перечёркивания" варианта
       >
-        <Ban size={16} />
+        <EliminateIcon label={label} />
       </button>
     </div>
   </li>
 );
+
 
 
 
