@@ -1170,7 +1170,7 @@ const NavBtn = ({ children, disabled, onClick }) => (
 );
 
 const ReviewBanner = ({ num }) => (
-  <div className="relative flex items-center gap-3 py-1.5 pr-0 mb-4 select-none bg-gray-50 rounded-md px-2">
+  <div className="relative flex items-center gap-3 py-1.5 pr-0 mb-4 select-none bg-gray-100 rounded-md px-2">
     <span className="px-3 h-8 flex items-center bg-black text-white font-bold text-base rounded-md">
       {num}
     </span>
