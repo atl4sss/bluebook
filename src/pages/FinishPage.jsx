@@ -36,7 +36,7 @@ export default function FinishPage() {
       `}</style>
 
       {/* верхняя панель */}
-      <header className="w-full flex items-center justify-between px-5 py-3 bg-white/90 border-b border-transparent">
+      <header className="w-full flex items-center justify-between px-5 py-3 bg-white border-b border-transparent">
         <button className="flex items-center gap-1 text-sm text-[#0f172a]">
           <HelpCircle size={18} /> Help
         </button>
