@@ -16,6 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 export { Demo };
 import App, { Demo } from "../App.jsx";
+import MiniChat from "../components/MiniChat";
 
 /* -------- Reading-&-Writing: 27 вопросов с prompt/stem/choices -------- */
 const RW_QUESTIONS = [
@@ -789,6 +790,9 @@ export default function TestPage() {
   const [showClock, setShowClock] = useState(true);
   const [showList, setShowList] = useState(false);
   const [takerName, setTakerName] = useState("");
+  const [showChat, setShowChat] = useState(false);
+  const groupId = "-1003410492234"; // твой GROUP_ID
+
 
   const nav = useNavigate();
 
@@ -862,7 +866,7 @@ export default function TestPage() {
             Section {stage.sec}, Module {stage.mod}: {stage.title}
           </h1>
           {/* Directions под заголовком */}
-          <button className="text-xs mt-1 flex items-center gap-1 text-gray-700">
+          <button className="text-xs mt-1 flex items-center gap-1 text-gray-700" onClick={() => setShowChat(s => !s)}>
             Directions <ChevronDown size={13} />
           </button>
         </div>
@@ -992,6 +996,13 @@ export default function TestPage() {
             </aside>
           </div>
         )}
+{showChat && (
+  <MiniChat
+    roomId={groupId}
+    userName={takerName}
+    onClose={() => setShowChat(false)}
+  />
+)}
       </main>
 
       {/* FOOTER */}
@@ -1105,12 +1116,41 @@ function BreakScreen({ sec, fmt, onResume, takerName }) {
 }
 
 /* ----------------------- helpers ----------------------- */
+// 28-отрезковый шаблон
+const DASH_PATTERN = "кзбскккккксбсбсззсззкбкккккк";
+
+// цвета: к — красный, з — зелёный, б — бежевый, с — синий
+const COLOR_MAP = {
+  к: "#B91C1C", // red
+  з: "#22C55E", // green
+  б: "#F5E3C3", // beige
+  с: "#2563EB", // blue
+};
+
+// ширины в пикселях
+const SEGMENT_TOTAL = 26; // весь сегмент (цвет + зазор)
+const COLOR_WIDTH = 24;   // цветная часть
+const GAP_WIDTH = 2;      // прозрачная часть
+
+// строим stops: [цвет 11px][прозрачный 3px] для каждого символа
+const DASH_GRADIENT_STOPS = DASH_PATTERN.split("").flatMap((ch, index) => {
+  const base = index * SEGMENT_TOTAL;
+  const colorStart = base;
+  const colorEnd = base + COLOR_WIDTH;
+  const gapEnd = base + SEGMENT_TOTAL;
+  const color = COLOR_MAP[ch] || "#000000";
+
+  return [
+    `${color} ${colorStart}px ${colorEnd}px`,
+    `transparent ${colorEnd}px ${gapEnd}px`,
+  ];
+}).join(", ");
+
 const DashLine = ({ className = "" }) => (
   <div
     className={`h-[2px] w-full ${className}`}
     style={{
-      backgroundImage:
-        "repeating-linear-gradient(to right,#FFD54F 0 16px,transparent 16px 19px,#5CA9E6 19px 35px,transparent 35px 38px,#9CA3AF 38px 54px,transparent 54px 57px)",
+      backgroundImage: `repeating-linear-gradient(to right, ${DASH_GRADIENT_STOPS})`,
     }}
   />
 );
@@ -1130,25 +1170,27 @@ const NavBtn = ({ children, disabled, onClick }) => (
 );
 
 const ReviewBanner = ({ num }) => (
-  <div className="relative flex items-center gap-3 py-1.5 pr-0 mb-4 select-none">
-    <span className="px-3 h-8 flex items-center bg-black text-white font-bold text-base rounded-r-md">
+  <div className="relative flex items-center gap-3 py-1.5 pr-0 mb-4 select-none bg-gray-50 rounded-md px-2">
+    <span className="px-3 h-8 flex items-center bg-black text-white font-bold text-base rounded-md">
       {num}
     </span>
     <Bookmark size={18} className="text-gray-800" />
     <span className="font-medium text-gray-800 text-sm md:text-base">
       Mark for Review
     </span>
-    <div className="absolute left-0 right-0 -bottom-[2px] h-[2px] bg-gray-500 overflow-hidden">
+
+    {/* цветная плашка снизу с тем же паттерном на 28 отрезков */}
+    <div className="absolute left-0 right-0 -bottom-[2px] h-[2px] overflow-hidden rounded-b-md">
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage:
-            "repeating-linear-gradient(to right,#FFD54F 0 12px,transparent 12px 24px,#5CA9E6 24px 36px,transparent 36px 48px)",
+          backgroundImage: `repeating-linear-gradient(to right, ${DASH_GRADIENT_STOPS})`,
         }}
       />
     </div>
   </div>
 );
+
 
 const Choice = ({ label, text, active, onClick }) => (
   <li className="mt-4 first:mt-0">
