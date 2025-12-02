@@ -14,6 +14,7 @@ import {
   BookOpen,
   Target,
   Ban,
+  MapPin,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 export { Demo };
@@ -794,6 +795,8 @@ export default function TestPage() {
   const [takerName, setTakerName] = useState("");
   const [showChat, setShowChat] = useState(false);
   const groupId = "-1003410492234"; // твой GROUP_ID
+  const [showCheck, setShowCheck] = useState(false);
+
 
 
   const nav = useNavigate();
@@ -811,18 +814,22 @@ export default function TestPage() {
     window.scrollTo(0, 0);
   }, [stageIdx, stage.mins]);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSecLeft((s) => {
-        if (s > 0) return s - 1;
-        clearInterval(id);
-        nextStage();
-        return 0;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stageIdx]);
+ useEffect(() => {
+  // во время break и на экране Check Your Work таймер не тикает
+  if (stage.id === "break" || showCheck) return;
+
+  const id = setInterval(() => {
+    setSecLeft((s) => {
+      if (s > 0) return s - 1;
+      clearInterval(id);
+      goAfterModule(); // время вышло → переходим к экрану/следующему модулю
+      return 0;
+    });
+  }, 1000);
+
+  return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [stageIdx, stage.id, showCheck]);
 
   const fmt = (s) =>
     `${Math.floor(s / 60)
@@ -833,8 +840,18 @@ export default function TestPage() {
     if (stageIdx < STAGES.length - 1) {
       setStageIdx(stageIdx + 1);
     } else {
-      // последний этап – уходим на финальную страницу
       nav("/finish");
+    }
+  }
+
+  // вызываем её в конце модуля:
+  // для обычного модуля → показываем Check Your Work,
+  // для break → сразу идём дальше
+  function goAfterModule() {
+    if (stage.id === "break") {
+      nextStage();
+    } else {
+      setShowCheck(true);
     }
   }
 
@@ -846,9 +863,12 @@ export default function TestPage() {
   const { stem, choices, grid } = curr;
 
   const nextQ = () => {
-    if (qIdx < total - 1) setQIdx(qIdx + 1);
-    else nextStage();
-  };
+  if (qIdx < total - 1) {
+    setQIdx(qIdx + 1);
+  } else {
+    goAfterModule(); // последний вопрос → Check Your Work
+  }
+};
   const prevQ = () => setQIdx((p) => Math.max(0, p - 1));
 
   const nextLabel = (() => {
@@ -924,12 +944,23 @@ export default function TestPage() {
       <DashLine className="mt-5" />
 
       {/* MAIN */}
-      <main className="relative flex-1 overflow-auto px-6 md:px-10 py-6 md:py-8">
+  <main className="relative flex-1 overflow-auto px-6 md:px-10 py-6 md:py-8">
+    {showCheck ? (
+      <CheckWorkScreen
+        stage={stage}
+        stageIdx={stageIdx}
+        total={total}
+        answers={answers}
+        current={qIdx + 1}
+      />
+    ) : (
+      <>
         {!isMath && (
           <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] bg-gray-400/90" />
         )}
 
         {isMath ? (
+          /* здесь оставь твой СТАРЫЙ блок для математики без изменений */
           <div className="max-w-2xl mx-auto">
             <ReviewBanner num={qIdx + 1} />
             <p className="text-[16px] mb-6">{stem}</p>
@@ -942,6 +973,7 @@ export default function TestPage() {
                     label={String.fromCharCode(65 + i)}
                     text={txt}
                     active={answers[`${stageIdx}-${qIdx}`] === i}
+                    serif
                     onClick={() =>
                       setAnswers({ ...answers, [`${stageIdx}-${qIdx}`]: i })
                     }
@@ -964,6 +996,7 @@ export default function TestPage() {
             )}
           </div>
         ) : (
+          /* и здесь оставь твой старый блок для RW без изменений */
           <div
             className="grid md:max-w-7xl mx-auto"
             style={{
@@ -972,16 +1005,16 @@ export default function TestPage() {
             }}
           >
             <section className="max-w-[640px] pr-8 md:pr-12">
-              <p className="text-[16px]">{stem}</p>
+              <p className="text-[16px] font-serif leading-relaxed">{stem}</p>
             </section>
 
             <aside className="pl-4 md:pl-6 max-h-[70vh] overflow-auto">
               <ReviewBanner num={qIdx + 1} />
-                {curr.prompt && (
-                  <p className="text-[16px] mb-4">
-                    {curr.prompt}
-                  </p>
-                )}
+              {curr.prompt && (
+                <p className="text-[16px] mb-4 font-serif leading-relaxed">
+                  {curr.prompt}
+                </p>
+              )}
               <ul>
                 {choices.map((txt, i) => (
                   <Choice
@@ -989,6 +1022,7 @@ export default function TestPage() {
                     label={String.fromCharCode(65 + i)}
                     text={txt}
                     active={answers[`${stageIdx}-${qIdx}`] === i}
+                    serif
                     onClick={() =>
                       setAnswers({ ...answers, [`${stageIdx}-${qIdx}`]: i })
                     }
@@ -998,56 +1032,79 @@ export default function TestPage() {
             </aside>
           </div>
         )}
-{showChat && (
-  <MiniChat
-    roomId={groupId}
-    userName={takerName}
-    onClose={() => setShowChat(false)}
-  />
-)}
-      </main>
+
+        {showChat && (
+          <MiniChat
+            roomId={groupId}
+            userName={takerName}
+            onClose={() => setShowChat(false)}
+          />
+        )}
+      </>
+    )}
+  </main>
+
 
       {/* FOOTER */}
       <footer className="relative border-t border-gray-300 pt-3 pb-4 md:py-4 px-6 md:px-10">
         <DashLine className="absolute inset-x-0 top-0" />
-        <div className="relative flex items-center md:max-w-7xl mx-auto w-full pt-2.5">
-          {/* имя слева снизу */}
-          {takerName && (
-            <span className="absolute left-4 font-semibold text-[17px] md:text-[18px]">
-              {takerName}
-            </span>
-          )}
+          <div className="relative flex items-center md:max-w-7xl mx-auto w-full pt-2.5">
+            {takerName && (
+              <span className="absolute left-4 font-semibold text-[17px] md:text-[18px]">
+                {takerName}
+              </span>
+            )}
 
-          <div className="ml-auto flex items-center gap-3 md:gap-4">
-            <NavBtn disabled={qIdx === 0} onClick={prevQ}>
-              Back
-            </NavBtn>
-            <NavBtn onClick={nextQ}>{nextLabel}</NavBtn>
+            {showCheck ? (
+              // на экране Check Your Work
+              <div className="ml-auto flex items-center gap-3 md:gap-4">
+                <NavBtn onClick={() => setShowCheck(false)}>Back</NavBtn>
+                <NavBtn
+                  onClick={() => {
+                    setShowCheck(false);
+                    nextStage();
+                  }}
+                >
+                  {stageIdx === STAGES.length - 1 ? "Finish" : "Next Module"}
+                </NavBtn>
+              </div>
+            ) : (
+              // обычные кнопки, как были
+              <>
+                <div className="ml-auto flex items-center gap-3 md:gap-4">
+                  <NavBtn disabled={qIdx === 0} onClick={prevQ}>
+                    Back
+                  </NavBtn>
+                  <NavBtn onClick={nextQ}>{nextLabel}</NavBtn>
+                </div>
+
+                <button
+                  onClick={() => setShowList(!showList)}
+                  className="absolute left-1/2 -translate-x-1/2 bg-black text-white text-sm font-semibold px-6 py-2 rounded-md shadow flex items-center gap-1"
+                >
+                  Question {qIdx + 1} of {total}
+                  <ChevronDown
+                    size={14}
+                    className={showList ? "rotate-180 transition-transform" : ""}
+                  />
+                </button>
+
+                {showList && (
+                  <Popover
+                    total={total}
+                    current={qIdx + 1}
+                    sectionTitle={`Section ${stage.sec}, Module ${stage.mod}: ${stage.title}`}
+                    onSelect={(n) => {
+                      setQIdx(n - 1);
+                      setShowList(false);
+                    }}
+                    onClose={() => setShowList(false)}
+                  />
+                )}
+              </>
+            )}
           </div>
 
-          <button
-            onClick={() => setShowList(!showList)}
-            className="absolute left-1/2 -translate-x-1/2 bg-black text-white text-sm font-semibold px-6 py-2 rounded-md shadow flex items-center gap-1"
-          >
-            Question {qIdx + 1} of {total}
-            <ChevronDown
-              size={14}
-              className={showList ? "rotate-180 transition-transform" : ""}
-            />
-          </button>
-
-          {showList && (
-            <Popover
-              total={total}
-              current={qIdx + 1}
-              onSelect={(n) => {
-                setQIdx(n - 1);
-                setShowList(false);
-              }}
-              onClose={() => setShowList(false)}
-            />
-          )}
-        </div>
       </footer>
     </div>
   );
@@ -1113,6 +1170,65 @@ function BreakScreen({ sec, fmt, onResume, takerName }) {
           {takerName}
         </span>
       )}
+    </div>
+  );
+}
+function CheckWorkScreen({ stage, stageIdx, total, answers, current }) {
+  const items = Array.from({ length: total }).map((_, i) => {
+    const key = `${stageIdx}-${i}`;
+    const answered = Object.prototype.hasOwnProperty.call(answers, key);
+    return { num: i + 1, answered };
+  });
+
+  return (
+    <div className="flex flex-col items-center pt-10 md:pt-14 pb-10">
+      <h1 className="text-3xl font-semibold mb-2 text-gray-900">
+        Check Your Work
+      </h1>
+      <p className="text-[15px] text-gray-700 mb-1 text-center">
+        On test day, you won&apos;t be able to move on to the next module until
+        time expires.
+      </p>
+      <p className="text-[15px] text-gray-700 mb-8 text-center">
+        For these practice questions, you can click{" "}
+        <span className="font-semibold">Next Module</span> when you are ready to
+        move on.
+      </p>
+
+      <div className="bg-white rounded-2xl shadow-[0_18px_45px_rgba(15,23,42,0.12)] px-8 py-6 w-full max-w-3xl border border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-[16px]">
+            Section {stage.sec}, Module {stage.mod}: {stage.title}
+          </h2>
+
+          <div className="flex items-center gap-6 text-[13px] text-gray-600">
+            <div className="flex items-center gap-1">
+              <span className="w-4 h-4 border border-gray-500 rounded-sm inline-block" />
+              <span>Unanswered</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-300 pt-5">
+          <div className="grid grid-cols-9 sm:grid-cols-10 gap-3 justify-items-center">
+            {items.map((item) => (
+              <div
+                key={item.num}
+                className={`w-9 h-9 flex items-center justify-center text-[14px] font-semibold rounded-sm
+                  ${
+                    item.answered
+                      ? "bg-[#325BD5] text-white"
+                      : "border border-dashed border-gray-500 text-[#325BD5]"
+                  }
+                  ${item.num === current ? "ring-2 ring-[#111827]" : ""}
+                `}
+              >
+                {item.num}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1230,7 +1346,7 @@ const EliminateIcon = ({ label }) => (
     </text>
   </svg>
 );
-const Choice = ({ label, text, active, onClick }) => (
+const Choice = ({ label, text, active, onClick, serif }) => (
   <li className="mt-4 first:mt-0">
     <div className="flex items-stretch gap-3">
       {/* основной вариант */}
@@ -1250,7 +1366,11 @@ const Choice = ({ label, text, active, onClick }) => (
           {label}
         </span>
 
-        <span className="flex-1 text-left text-[16px] leading-snug">
+        <span 
+          className={`flex-1 text-left text-[16px] leading-snug ${
+            serif ? "font-serif" : ""
+          }`}
+          >
           {text}
         </span>
       </button>
@@ -1269,32 +1389,80 @@ const Choice = ({ label, text, active, onClick }) => (
 
 
 
-function Popover({ total, current, onSelect, onClose }) {
+function Popover({ total, current, sectionTitle, onSelect, onClose }) {
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 bottom-[90px] bg-white border border-gray-300 rounded-lg shadow-lg w-[360px] z-50">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 text-sm font-semibold">
-        Questions
-        <button onClick={onClose} className="p-1 rounded hover:bg-gray-100">
-          <X size={16} />
-        </button>
-      </div>
-      <div className="p-4 grid grid-cols-8 gap-2 text-xs">
-        {Array.from({ length: total }).map((_, i) => {
-          const n = i + 1;
-          const active = n === current;
-          return (
+    <div className="fixed left-1/2 bottom-20 -translate-x-1/2 z-48">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-[min(640px,100%-40px)] max-h-[70vh] flex flex-col">
+        {/* header */}
+        <div className="px-6 pt-4 pb-3 border-b border-gray-200 flex items-start justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              {sectionTitle}
+            </h2>
+
+            <div className="mt-3 flex items-center gap-6 text-xs text-gray-700">
+              <span className="flex items-center gap-1">
+                <MapPin size={16} className="text-gray-900" />
+                <span>Current</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-4 h-4 border border-dashed border-gray-500 rounded-[2px]" />
+                <span>Unanswered</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <Bookmark size={16} className="text-red-500" />
+                <span>For Review</span>
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-100 text-gray-600"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="px-6 py-4 overflow-auto">
+          <div className="grid grid-cols-10 gap-3 text-sm">
+            {Array.from({ length: total }).map((_, i) => {
+              const n = i + 1;
+              const isCurrent = n === current;
+
+              return (
+                <button
+                  key={n}
+                  onClick={() => onSelect(n)}
+                  className={`relative w-9 h-9 flex items-center justify-center rounded-sm font-semibold ${
+                    isCurrent
+                      ? "bg-[#1E40AF] text-white"
+                      : "border border-dashed border-gray-500 text-[#1E40AF] hover:bg-gray-50"
+                  }`}
+                >
+                  {isCurrent && (
+                    <MapPin
+                      size={16}
+                      className="absolute -top-5 left-1/2 -translate-x-1/2 text-gray-900"
+                    />
+                  )}
+                  {n}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-6 flex justify-center">
             <button
-              key={n}
-              onClick={() => onSelect(n)}
-              className={`relative w-8 h-8 flex items-center justify-center rounded-sm font-bold ${
-                active ? "border border-gray-900" : "bg-[#324DC7] text-white"
-              }`}
+              onClick={onClose}
+              className="px-6 py-2 rounded-full border border-[#2563EB] text-[#2563EB] text-sm font-semibold hover:bg-[#EFF6FF] transition-colors"
             >
-              {n}
+              Go to Preview Page
             </button>
-          );
-        })}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+

@@ -1,19 +1,16 @@
 /* eslint-env node */
 /** @type {import('tailwindcss').Config} */
+// tailwind.config.cjs / tailwind.config.js
 module.exports = {
-  content: [
-    './index.html',
-    './src/**/*.{js,jsx,ts,tsx}', // сканируем весь исходник
-  ],
+  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       fontFamily: {
-        // теперь "font-sans" = Myriad Pro
-        sans: ['Myriad_Pro', 'ui-sans-serif', 'system-ui'],
-        // а "font-serif" = Minion Pro
-        serif: ['Minion_Pro', 'ui-serif', 'Georgia'],
+        sans: ['"Myriad Pro"', "system-ui", "sans-serif"],
+        serif: ['"Minion Pro"', "Georgia", "serif"],
       },
     },
   },
   plugins: [],
 };
+

@@ -3,15 +3,16 @@
 @tailwind utilities;
 /* ====== custom fonts ====== */
 @font-face {
-  font-family: 'Myriad_Pro';
-  src: url('/assets/fonts/MyriadPro-Regular.otf') format('opentype');
+  font-family: "Minion Pro";
+  src: url("/fonts/MinionPro-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
-  font-family: 'Minion_Pro';
-  src: url('/assets/fonts/MinionPro-Regular.otf') format('opentype');
+  font-family: "Myriad Pro";
+  src: url("/fonts/MyriadPro-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
