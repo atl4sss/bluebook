@@ -816,7 +816,7 @@ export default function TestPage() {
 
  useEffect(() => {
   // во время break и на экране Check Your Work таймер не тикает
-  if (stage.id === "break" || showCheck) return;
+  if (showCheck) return;
 
   const id = setInterval(() => {
     setSecLeft((s) => {

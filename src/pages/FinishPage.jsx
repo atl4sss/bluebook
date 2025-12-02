@@ -9,7 +9,7 @@ export default function FinishPage() {
     const colors = ["#FFD429", "#5CA9E6", "#F36C6C", "#7AD37A"];
     return Array.from({ length: 55 }).map((_, i) => {
       const left = Math.random() * 100; // %
-      const delay = Math.random() * 6; // s
+      const delay = Math.random() * 0.1; // от 0 до 0.3s
       const duration = 6 + Math.random() * 7; // 6-13s
       const size = 6 + Math.random() * 8; // высота «палочки»
       const rotate = Math.random() * 360;
