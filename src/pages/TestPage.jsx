@@ -1080,7 +1080,7 @@ export default function TestPage() {
         <DashLine className="absolute inset-x-0 top-0" />
           <div className="relative flex items-center md:max-w-7xl mx-auto w-full pt-2.5">
             {takerName && (
-              <span className="absolute left-4 font-semibold text-[17px] md:text-[18px]">
+              <span className="absolute left-[-26px] font-semibold text-[17px] md:text-[18px]">
                 {takerName}
               </span>
             )}
@@ -1324,17 +1324,21 @@ const NavBtn = ({ children, disabled, onClick }) => (
 );
 
 const ReviewBanner = ({ num }) => (
-  <div className="relative flex items-center gap-3 py-1.5 pr-0 mb-4 select-none bg-gray-100 rounded-md px-2">
-    <span className="px-3 h-8 flex items-center bg-black text-white font-bold text-base rounded-md">
+  <div className="relative flex items-center gap-3 py-1.5 mb-4 select-none bg-gray-100 rounded-none px-3">
+    <span className="px-3 h-8 flex items-center bg-black text-white font-bold text-base rounded-none">
       {num}
     </span>
     <Bookmark size={18} className="text-gray-800" />
     <span className="font-medium text-gray-800 text-sm md:text-base">
       Mark for Review
     </span>
+    {/* ИКОНКА ABC ЗАЧЁРКНУТА СПРАВА */}
+    <div className="ml-auto">
+      <AbcDisabledIcon />
+    </div>
 
-    {/* цветная плашка снизу с тем же паттерном на 28 отрезков */}
-    <div className="absolute left-0 right-0 -bottom-[2px] h-[2px] overflow-hidden rounded-b-md">
+    {/* цветная плашка снизу — оставляем как была */}
+    <div className="absolute left-0 right-0 -bottom-[2px] h-[2px]">
       <div
         className="absolute inset-0"
         style={{
@@ -1343,6 +1347,7 @@ const ReviewBanner = ({ num }) => (
       />
     </div>
   </div>
+  
 );
 const EliminateIcon = ({ label }) => (
   <svg
@@ -1382,6 +1387,52 @@ const EliminateIcon = ({ label }) => (
     </text>
   </svg>
 );
+const AbcDisabledIcon = () => (
+  <svg
+    width="32"
+    height="26"
+    viewBox="0 0 32 26"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* синий прямоугольник */}
+    <rect
+      x="1.5"
+      y="1.5"
+      width="29"
+      height="23"
+      rx="4"
+      ry="4"
+      fill="#0F3B82"
+      stroke="#0F3B82"
+      strokeWidth="1.5"
+    />
+
+    {/* надпись ABC */}
+    <text
+      x="16"
+      y="17"
+      textAnchor="middle"
+      fontFamily="Myriad Pro, system-ui, sans-serif"
+      fontSize="11"
+      fill="#FFFFFF"
+      fontWeight="600"
+    >
+      ABC
+    </text>
+
+    {/* диагональная линия (зачёркнуто) */}
+    <line
+      x1="7"
+      y1="20"
+      x2="25"
+      y2="7"
+      stroke="#FFFFFF"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
 const Choice = ({ label, text, active, onClick, serif }) => (
   <li className="mt-4 first:mt-0">
     <div className="flex items-stretch gap-3">
