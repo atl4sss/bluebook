@@ -900,15 +900,19 @@ export default function TestPage() {
         </div>
 
         {/* clock */}
-        <div
-          className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5
-            ${isLowTime ? "text-red-600" : "text-gray-900"}`}
-        >
+        {/* clock */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 text-gray-900">
           {showClock ? (
             <>
-              <span className="text-lg md:text-xl font-bold tabular-nums">
+              <span
+                className={
+                  `text-lg md:text-xl font-bold tabular-nums ` +
+                  (isLowTime ? "text-red-600" : "text-gray-900")
+                }
+              >
                 {fmt(secLeft)}
               </span>
+
               <button
                 onClick={() => setShowClock(false)}
                 className="text-[11px] font-semibold px-4 py-0.5 border border-current rounded-full hover:bg-gray-100"
