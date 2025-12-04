@@ -3,7 +3,7 @@
    Полный mock-SAT (2 секции + break) с переходом на /finish
    ========================================================================== */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   BatteryFull,
   Bookmark,
@@ -15,11 +15,15 @@ import {
   Target,
   Ban,
   MapPin,
+  PenLine,
+  FileText,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 export { Demo };
 import App, { Demo } from "../App.jsx";
 import MiniChat from "../components/MiniChat";
+import mathRefImg from "../assets/math-reference.jpeg";
+
 
 /* -------- Reading-&-Writing: 27 вопросов с prompt/stem/choices -------- */
 const RW_QUESTIONS = [
@@ -796,6 +800,8 @@ export default function TestPage() {
   const [showChat, setShowChat] = useState(false);
   const groupId = "-1003410492234"; // твой GROUP_ID
   const [showCheck, setShowCheck] = useState(false);
+  const isLowTime = secLeft <= 5 * 60; // 5 минут
+  const [showReference, setShowReference] = useState(false);
 
 
 
@@ -894,7 +900,10 @@ export default function TestPage() {
         </div>
 
         {/* clock */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5">
+        <div
+          className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5
+            ${isLowTime ? "text-red-600" : "text-gray-900"}`}
+        >
           {showClock ? (
             <>
               <span className="text-lg md:text-xl font-bold tabular-nums">
@@ -918,26 +927,54 @@ export default function TestPage() {
         </div>
 
         {/* toolbar */}
-        <div className="ml-auto flex items-center gap-6 opacity-90 text-[11px] md:text-xs select-none">
-          {isMath && (
-            <>
-              <button className="flex flex-col items-center gap-0.5">
-                <Calculator size={18} />
-                Calculator
-              </button>
-              <button className="flex flex-col items-center gap-0.5">
-                <BookOpen size={18} />
-                Reference
-              </button>
-            </>
-          )}
-          <button className="flex flex-col items-center gap-0.5 opacity-60">
-            <MoreVertical size={18} />
-            More
-          </button>
-          <span className="flex items-center gap-1 opacity-60">
-            100 % <BatteryFull size={16} />
-          </span>
+        <div className="ml-auto flex items-center text-[11px] md:text-xs select-none">
+          <div className="flex flex-col items-end gap-2">
+            {/* батарейка сверху справа */}
+            <span className="flex items-center gap-1 text-gray-800">
+              100 % <BatteryFull size={16} />
+            </span>
+
+            {/* нижний ряд кнопок */}
+            {isMath ? (
+              // Математика: Calculator | Reference | More
+              <div className="flex items-center gap-6 text-gray-800">
+                <button className="flex flex-col items-center gap-0.5">
+                  <Calculator size={18} />
+                  <span>Calculator</span>
+                </button>
+
+                <button
+                  className="flex flex-col items-center gap-0.5"
+                  onClick={() => setShowReference((s) => !s)}
+                >
+                  {/* X²-иконка как текст, как в Bluebook */}
+                  <span className="text-[18px] font-bold leading-none">x²</span>
+                  <span>Reference</span>
+                </button>
+
+                <button className="flex flex-col items-center gap-0.5">
+                  <MoreVertical size={18} />
+                  <span>More</span>
+                </button>
+              </div>
+            ) : (
+              // Reading & Writing: Highlights & Notes | More
+              <div className="flex items-center gap-6 text-gray-800">
+                <button className="flex flex-col items-center gap-1">
+                  <span className="flex items-center gap-1">
+                    <PenLine size={18} />
+                    <FileText size={18} />
+                  </span>
+                  <span className="mt-0.5">Highlights &amp; Notes</span>
+                </button>
+
+                <button className="flex flex-col items-center gap-0.5">
+                  <MoreVertical size={18} />
+                  <span>More</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -1033,13 +1070,6 @@ export default function TestPage() {
           </div>
         )}
 
-        {showChat && (
-          <MiniChat
-            roomId={groupId}
-            userName={takerName}
-            onClose={() => setShowChat(false)}
-          />
-        )}
       </>
     )}
   </main>
@@ -1080,7 +1110,7 @@ export default function TestPage() {
 
                 <button
                   onClick={() => setShowList(!showList)}
-                  className="absolute left-1/2 -translate-x-1/2 bg-black text-white text-sm font-semibold px-6 py-2 rounded-md shadow flex items-center gap-1"
+                  className="absolute left-1/2 -translate-x-1/2 bg-black text-white text-sm font-extrabold px-6 py-2 rounded-md shadow flex items-center gap-1"
                 >
                   Question {qIdx + 1} of {total}
                   <ChevronDown
@@ -1106,6 +1136,12 @@ export default function TestPage() {
           </div>
 
       </footer>
+      {isMath && (
+        <MathReferenceFloating
+          visible={showReference}
+          onClose={() => setShowReference(false)}
+        />
+      )}
     </div>
   );
 }
@@ -1186,13 +1222,13 @@ function CheckWorkScreen({ stage, stageIdx, total, answers, current }) {
         Check Your Work
       </h1>
       <p className="text-[15px] text-gray-700 mb-1 text-center">
-        On test day, you won&apos;t be able to move on to the next module until
+        You are not allowed to move on to the next module until
         time expires.
       </p>
       <p className="text-[15px] text-gray-700 mb-8 text-center">
-        For these practice questions, you can click{" "}
-        <span className="font-semibold">Next Module</span> when you are ready to
-        move on.
+        Do not click Next Module until time is up!{" "}
+        <span className="font-semibold">Next Module</span> when time is 
+        almost over.
       </p>
 
       <div className="bg-white rounded-2xl shadow-[0_18px_45px_rgba(15,23,42,0.12)] px-8 py-6 w-full max-w-3xl border border-gray-200">
@@ -1460,6 +1496,89 @@ function Popover({ total, current, sectionTitle, onSelect, onClose }) {
               Go to Preview Page
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MathReferenceFloating({ visible, onClose }) {
+  const panelRef = useRef(null);
+
+  // позиция окна; по умолчанию — под Reference справа сверху
+  const [pos, setPos] = useState({ x: null, y: null });
+  const [dragging, setDragging] = useState(false);
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+
+  // обработчик начала тащить (по шапке окна)
+  const handleMouseDown = (e) => {
+    if (!panelRef.current) return;
+    e.preventDefault();
+
+    const rect = panelRef.current.getBoundingClientRect();
+    dragOffsetRef.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+    setDragging(true);
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    const handleMove = (e) => {
+      setPos({
+        x: e.clientX - dragOffsetRef.current.x,
+        y: e.clientY - dragOffsetRef.current.y,
+      });
+    };
+
+    const handleUp = () => setDragging(false);
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [dragging]);
+
+  if (!visible) return null;
+
+  // если ещё не таскали — ставим дефолт: под Reference
+  const style = {
+    position: "fixed",
+    zIndex: 40,
+    // либо сохранённые координаты, либо дефолт
+    top: pos.y ?? 72,
+    right: pos.x == null ? 24 : undefined,
+    left: pos.x ?? undefined,
+  };
+
+  return (
+    <div style={style} ref={panelRef}>
+      <div className="bg-white rounded-xl shadow-2xl border border-gray-300 w-[min(720px,100vw-32px)]">
+        {/* шапка — за неё двигаем */}
+        <div
+          className="cursor-move flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-gray-50 rounded-t-xl"
+          onMouseDown={handleMouseDown}
+        >
+          <span className="text-sm font-semibold">Math Reference</span>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-200"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* сама картинка */}
+        <div className="p-4 bg-white">
+          <img
+            src={mathRefImg}
+            alt="Math Reference Sheet"
+            className="max-h-[60vh] w-full object-contain select-none pointer-events-none"
+          />
         </div>
       </div>
     </div>

@@ -93,7 +93,7 @@ export default function StartCodePage() {
     "focus:outline-none focus:border-gray-800";
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#cfdccc] text-gray-900">
+    <div className="min-h-screen flex flex-col bg-[#C6DECF] text-gray-900">
       {/* top bar */}
       <header className="flex justify-between items-center px-4 py-2 text-[15px] bg-white/70 backdrop-blur">
         <button onClick={() => setShowHelp(true)} className="flex items-center gap-1 hover:underline">
