@@ -997,7 +997,20 @@ export default function TestPage() {
     ) : (
       <>
         {!isMath && (
-          <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] bg-gray-400/90" />
+          <>
+            {/* вертикальная линия по центру */}
+            <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px] bg-gray-400/90" />
+
+            {/* декоративный ползунок по центру экрана */}
+            <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div className="h-7 w-4 bg-[#111827] rounded-sm flex items-center justify-between px-[3px]">
+                {/* стрелка влево */}
+                <span className="block w-0 h-0 border-y-[6px] border-y-transparent border-r-[4px] border-r-white" />
+                {/* стрелка вправо */}
+                <span className="block w-0 h-0 border-y-[6px] border-y-transparent border-l-[4px] border-l-white" />
+              </div>
+            </div>
+          </>
         )}
 
         {isMath ? (
